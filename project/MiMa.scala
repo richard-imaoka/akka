@@ -1186,7 +1186,18 @@ object MiMa extends AutoPlugin {
           ProblemFilters.exclude[InheritedNewAbstractMethodProblem]("akka.stream.Graph.traversalBuilder"),
           ProblemFilters.exclude[InheritedNewAbstractMethodProblem]("akka.stream.Graph.named"),
           ProblemFilters.exclude[InheritedNewAbstractMethodProblem]("akka.stream.Graph.addAttributes"),
-          ProblemFilters.exclude[InheritedNewAbstractMethodProblem]("akka.stream.Graph.async")
+          ProblemFilters.exclude[InheritedNewAbstractMethodProblem]("akka.stream.Graph.async"),
+
+          // #21213 Feature request: Let BackoffSupervisor reply to messages when its child is stopped
+          ProblemFilters.exclude[DirectMissingMethodProblem]("akka.pattern.BackoffSupervisor.this"),
+          ProblemFilters.exclude[DirectMissingMethodProblem]("akka.pattern.BackoffOptionsImpl.copy"),
+          ProblemFilters.exclude[DirectMissingMethodProblem]("akka.pattern.BackoffOptionsImpl.this"),
+          ProblemFilters.exclude[MissingTypesProblem]("akka.pattern.BackoffOptionsImpl$"),
+          ProblemFilters.exclude[DirectMissingMethodProblem]("akka.pattern.BackoffOptionsImpl.apply"),
+          ProblemFilters.exclude[DirectMissingMethodProblem]("akka.pattern.BackoffOnRestartSupervisor.this"),
+          ProblemFilters.exclude[ReversedMissingMethodProblem]("akka.pattern.HandleBackoff.replyWhileStopped"),
+          ProblemFilters.exclude[ReversedMissingMethodProblem]("akka.pattern.BackoffOptions.withReplyWhileStopped")
+
       )
     )
 

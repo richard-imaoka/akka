@@ -69,6 +69,20 @@ object Backoff {
    * @param randomFactor after calculation of the exponential back-off an additional
    *   random delay based on this factor is added, e.g. `0.2` adds up to `20%` delay.
    *   In order to skip this additional delay pass in `0`.
+   * @param replyWhileStopped The message that the supervisor will send in response to all messages while
+   *   its child is stopped.
+   */
+  def onFailure(
+    childProps:        Props,
+    childName:         String,
+    minBackoff:        FiniteDuration,
+    maxBackoff:        FiniteDuration,
+    randomFactor:      Double,
+    replyWhileStopped: Option[Any]): BackoffOptions =
+    BackoffOptionsImpl(RestartImpliesFailure, childProps, childName, minBackoff, maxBackoff, randomFactor, replyWhileStopped = replyWhileStopped)
+
+  /**
+   * For Java compatibility with no replyWhileStopped specified
    */
   def onFailure(
     childProps:   Props,
@@ -76,7 +90,7 @@ object Backoff {
     minBackoff:   FiniteDuration,
     maxBackoff:   FiniteDuration,
     randomFactor: Double): BackoffOptions =
-    BackoffOptionsImpl(RestartImpliesFailure, childProps, childName, minBackoff, maxBackoff, randomFactor)
+    onFailure(childProps, childName, minBackoff, maxBackoff, randomFactor, None)
 
   /**
    * Back-off options for creating a back-off supervisor actor that expects a child actor to stop on failure.
@@ -130,6 +144,20 @@ object Backoff {
    * @param randomFactor after calculation of the exponential back-off an additional
    *   random delay based on this factor is added, e.g. `0.2` adds up to `20%` delay.
    *   In order to skip this additional delay pass in `0`.
+   * @param replyWhileStopped The message that the supervisor will send in response to all messages while
+   *   its child is stopped.
+   */
+  def onStop(
+    childProps:        Props,
+    childName:         String,
+    minBackoff:        FiniteDuration,
+    maxBackoff:        FiniteDuration,
+    randomFactor:      Double,
+    replyWhileStopped: Option[Any]): BackoffOptions =
+    BackoffOptionsImpl(StopImpliesFailure, childProps, childName, minBackoff, maxBackoff, randomFactor, replyWhileStopped = replyWhileStopped)
+
+  /**
+   * For Java compatibility with no replyWhileStopped specified
    */
   def onStop(
     childProps:   Props,
@@ -137,7 +165,8 @@ object Backoff {
     minBackoff:   FiniteDuration,
     maxBackoff:   FiniteDuration,
     randomFactor: Double): BackoffOptions =
-    BackoffOptionsImpl(StopImpliesFailure, childProps, childName, minBackoff, maxBackoff, randomFactor)
+    onStop(childProps, childName, minBackoff, maxBackoff, randomFactor, None)
+
 }
 
 /**
@@ -223,8 +252,10 @@ private final case class BackoffOptionsImpl(
     }
 
     backoffType match {
+      //onFailure method in companion object
       case RestartImpliesFailure ⇒
         Props(new BackoffOnRestartSupervisor(childProps, childName, minBackoff, maxBackoff, backoffReset, randomFactor, supervisorStrategy, replyWhileStopped))
+      //onStop method in companion object
       case StopImpliesFailure ⇒
         Props(new BackoffSupervisor(childProps, childName, minBackoff, maxBackoff, backoffReset, randomFactor, supervisorStrategy, replyWhileStopped))
     }

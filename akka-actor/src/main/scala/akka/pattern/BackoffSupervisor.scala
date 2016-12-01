@@ -37,6 +37,21 @@ object BackoffSupervisor {
    * @param randomFactor after calculation of the exponential back-off an additional
    *   random delay based on this factor is added, e.g. `0.2` adds up to `20%` delay.
    *   In order to skip this additional delay pass in `0`.
+   * @param replyWhileStopped The message that the supervisor will send in response to all messages while
+   *   its child is stopped.
+   */
+  def props(
+    childProps:        Props,
+    childName:         String,
+    minBackoff:        FiniteDuration,
+    maxBackoff:        FiniteDuration,
+    randomFactor:      Double,
+    replyWhileStopped: Option[Any]): Props = {
+    propsWithSupervisorStrategy(childProps, childName, minBackoff, maxBackoff, randomFactor, SupervisorStrategy.defaultStrategy, replyWhileStopped)
+  }
+
+  /**
+   * For Java compatibility with no replyWhileStopped specified
    */
   def props(
     childProps:   Props,
@@ -44,7 +59,7 @@ object BackoffSupervisor {
     minBackoff:   FiniteDuration,
     maxBackoff:   FiniteDuration,
     randomFactor: Double): Props = {
-    propsWithSupervisorStrategy(childProps, childName, minBackoff, maxBackoff, randomFactor, SupervisorStrategy.defaultStrategy)
+    props(childProps, childName, minBackoff, maxBackoff, randomFactor, None)
   }
 
   /**
@@ -67,6 +82,25 @@ object BackoffSupervisor {
    * @param strategy the supervision strategy to use for handling exceptions
    *   in the child. As the BackoffSupervisor creates a separate actor to handle the
    *   backoff process, only a [[OneForOneStrategy]] makes sense here.
+   * @param replyWhileStopped The message that the supervisor will send in response to all messages while
+   *   its child is stopped.
+   */
+  def propsWithSupervisorStrategy(
+    childProps:        Props,
+    childName:         String,
+    minBackoff:        FiniteDuration,
+    maxBackoff:        FiniteDuration,
+    randomFactor:      Double,
+    strategy:          SupervisorStrategy,
+    replyWhileStopped: Option[Any]): Props = {
+    require(minBackoff > Duration.Zero, "minBackoff must be > 0")
+    require(maxBackoff >= minBackoff, "maxBackoff must be >= minBackoff")
+    require(0.0 <= randomFactor && randomFactor <= 1.0, "randomFactor must be between 0.0 and 1.0")
+    Props(new BackoffSupervisor(childProps, childName, minBackoff, maxBackoff, AutoReset(minBackoff), randomFactor, strategy, replyWhileStopped))
+  }
+
+  /**
+   * For Java compatibility with no replyWhileStopped specified
    */
   def propsWithSupervisorStrategy(
     childProps:   Props,
@@ -75,10 +109,7 @@ object BackoffSupervisor {
     maxBackoff:   FiniteDuration,
     randomFactor: Double,
     strategy:     SupervisorStrategy): Props = {
-    require(minBackoff > Duration.Zero, "minBackoff must be > 0")
-    require(maxBackoff >= minBackoff, "maxBackoff must be >= minBackoff")
-    require(0.0 <= randomFactor && randomFactor <= 1.0, "randomFactor must be between 0.0 and 1.0")
-    Props(new BackoffSupervisor(childProps, childName, minBackoff, maxBackoff, randomFactor, strategy))
+    propsWithSupervisorStrategy(childProps, childName, minBackoff, maxBackoff, randomFactor, strategy)
   }
 
   /**
