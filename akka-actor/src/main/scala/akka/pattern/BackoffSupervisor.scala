@@ -311,7 +311,7 @@ private[akka] trait HandleBackoff { this: Actor ⇒
       case Some(c) ⇒ c.forward(msg)
       case None ⇒ replyWhileStopped match {
         case Some(r) ⇒ sender ! r
-        case None  ⇒ context.system.deadLetters.forward(msg)
+        case None    ⇒ context.system.deadLetters.forward(msg)
       }
     }
   }

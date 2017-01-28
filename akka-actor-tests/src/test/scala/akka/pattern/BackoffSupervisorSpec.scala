@@ -188,6 +188,11 @@ class BackoffSupervisorSpec extends AkkaSpec with ImplicitSender {
         c1 ! "boom"
         expectTerminated(c1)
 
+        awaitAssert {
+          supervisor ! BackoffSupervisor.GetRestartCount
+          expectMsg(BackoffSupervisor.RestartCount(1))
+        }
+
         supervisor ! "boom"
         expectMsg("child was stopped")
       }
@@ -204,6 +209,11 @@ class BackoffSupervisorSpec extends AkkaSpec with ImplicitSender {
 
         c1 ! "boom"
         expectTerminated(c1)
+
+        awaitAssert {
+          supervisor ! BackoffSupervisor.GetRestartCount
+          expectMsg(BackoffSupervisor.RestartCount(1))
+        }
 
         supervisor ! "boom" //this will be sent to deadLetters
         expectNoMsg(500.milliseconds)
