@@ -204,7 +204,10 @@ private[akka] class ClusterJmx(cluster: Cluster, log: LoggingAdapter) {
       mBeanServer.registerMBean(mbean, clusterMBeanName)
       logInfo("Registered cluster JMX MBean [{}]", clusterMBeanName)
     } catch {
-      case e: InstanceAlreadyExistsException ⇒ // ignore - we are running multiple cluster nodes in the same JVM (probably for testing)
+      case e: InstanceAlreadyExistsException ⇒ {
+        log.warning("Tried to register alredy registered JMX MBean [{}] again, which is not expected. " +
+          "Are you running multiple cluster nodes in the same JVM probably for testing?", clusterMBeanName)
+      }
     }
   }
 
@@ -215,7 +218,10 @@ private[akka] class ClusterJmx(cluster: Cluster, log: LoggingAdapter) {
     try {
       mBeanServer.unregisterMBean(clusterMBeanName)
     } catch {
-      case e: InstanceNotFoundException ⇒ // ignore - we are running multiple cluster nodes in the same JVM (probably for testing)
+      case e: InstanceNotFoundException ⇒ {
+        log.warning("Tried to un-register already unregistered JMX MBean [{}] again, which is not expected. " +
+          "Are you running multiple cluster nodes in the same JVM probably for testing?", clusterMBeanName)
+      }
     }
   }
 
