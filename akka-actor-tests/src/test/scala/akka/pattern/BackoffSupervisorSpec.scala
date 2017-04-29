@@ -38,7 +38,6 @@ object BackoffSupervisorSpec {
         probe ! msg
         context.parent ! BackoffSupervisor.Reset
     }
-
   }
 }
 
@@ -178,7 +177,7 @@ class BackoffSupervisorSpec extends AkkaSpec with ImplicitSender {
 
     "reply to sender if replyWhileStopped is specified" in {
       filterException[TestException] {
-        val supervisor = create(Backoff.onFailure(Child.props(testActor), "c1", 100.seconds, 300.seconds, 0.2, Some("child was stopped")))
+        val supervisor = create(Backoff.onFailure(Child.props(testActor), "c1", 100.seconds, 300.seconds, 0.2).withReplyWhileStopped("child was stopped"))
         supervisor ! BackoffSupervisor.GetCurrentChild
         val c1 = expectMsgType[BackoffSupervisor.CurrentChild].ref.get
         watch(c1)
