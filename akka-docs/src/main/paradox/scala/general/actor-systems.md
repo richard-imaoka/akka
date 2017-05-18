@@ -107,14 +107,151 @@ which is a single point of contention if over-used.
 In some cases it is unavoidable to do blocking operations, i.e. to put a thread
 to sleep for an indeterminate time, waiting for an external event to occur.
 Examples are legacy RDBMS drivers or messaging APIs, and the underlying reason
-is typically that (network) I/O occurs under the covers. When facing this, you
+is typically that (network) I/O occurs under the covers. 
+
+@@snip [BlockingDispatcherSample.scala](../../../../test/scala/docs/actor/BlockingDispatcherSample.scala) { #blocking-in-actor }
+
+When facing this, you
 may be tempted to just wrap the blocking call inside a `Future` and work
 with that instead, but this strategy is too simple: you are quite likely to
 find bottlenecks or run out of memory or threads when the application runs
 under increased load.
 
+@@snip [BlockingDispatcherSample.scalaa](../../../../test/scala/docs/actor/BlockingDispatcherSample.scala) { #blocking-in-future }
+
+
+### Problem
+
+The key here is this line:
+
+```scala
+implicit val executionContext: ExecutionContext = context.dispatcher
+```
+
+Using `context.dispatcher` as the dispatcher on which the blocking Future
+executes can be a problem - the same dispatcher is used for actor's processing,
+unless you @ref:[set up a separate dispatcher for the actor](../dispatchers.md).
+
+If all of the available threads are blocked, then all the actors on the same dispatchers will starve for threads and
+they cannot process any more incoming message.
+
+@@@ note
+
+Blocking APIs should also be avoided if possible. Try to find or build Reactive APIs,
+such that blocking is minimised, or moved over to dedicated dispatchers.
+
+Often when integrating with existing libraries or systems it is not possible to
+avoid blocking APIs. The following solution explains how to handle blocking
+operations properly.
+
+Note that the same hints apply to managing blocking operations anywhere in Akka,
+including in Actors etc.
+
+@@@
+
+### Problem example: blocking the default dispatcher
+
+Let's set up an application with the above `BlockingFutureActor` and the following `PrintActor`. 
+
+@@snip [BlockingDispatcherSample.scala](../../../../test/scala/docs/actor/BlockingDispatcherSample.scala) { #print-actor }
+
+@@snip [BlockingDispatcherSample.scala](../../../../test/scala/docs/actor/BlockingDispatcherSample.scala) { #blocking-main }
+
+Here the app is sending 100 messages to `BlockingFutureActor` and `PrintActor` and large numbers
+of akka.actor.default-dispatcher threads are handling requests. When you run run the above code,
+you will likely to see the entire application gets stuck somewhere like this:
+
+```
+>　PrintActor: 44
+>　PrintActor: 45
+```
+
+(i.e.) (Ignoring `println`'s latency) `PrintActor` is non-blocking but it cannot process all the 100 messages asap.
+
+In the thread state diagrams below the colours have the following meaning:
+
+ * Turquoise - Sleeping state
+ * Orange - Waiting state
+ * Green - Runnable state
+
+The thread information was recorded using the YourKit profiler, however any good JVM profiler 
+has this feature (including the free and bundled with the Oracle JDK VisualVM, as well as Oracle Flight Recorder). 
+
+The orange portion of the thread shows that it is idle. Idle threads are fine -
+they're ready to accept new work. However, large amounts of Turquoise (sleeping) threads are very bad!
+
+![dispatcher-behaviour-on-good-code.png](../../images/dispatcher-behaviour-on-bad-code.png)
+
+The app is exposed to the load of `i: Int` messages which will block these threads. 
+For example "`default-akka.default-dispatcher2,3,4`"
+are going into the blocking state, after having been idle. It can be observed
+that the number of new threads increases, "`default-akka.actor.default-dispatcher 18,19,20,...`" 
+however they go to sleep state immediately, thus wasting the
+resources.
+
+The number of such new threads depends on the default dispatcher configuration,
+but it will likely not exceed 50. Since many requests are being processed, the entire
+thread pool is starved. The blocking operations dominate threads in the dispatcher 
+such that it has no thread available to handle other requests.
+
+In essence, the `Thread.sleep` operation has dominated all threads and caused anything 
+executing on the default dispatcher to starve for resources (including any actor
+that you have not configured an explicit dispatcher for).
+
+## Solution: Dedicated dispatcher for blocking operations
+
+In `application.conf`, the dispatcher dedicated to blocking behaviour should
+be configured as follows:
+
+```conf
+my-blocking-dispatcher {
+  type = Dispatcher
+  executor = "thread-pool-executor"
+  thread-pool-executor {
+    // or in Akka 2.4.2+
+    fixed-pool-size = 16
+  }
+  throughput = 100
+}
+```
+
+There are many dispatcher options available which can be found in @ref[Dispatchers](../dispatchers.md).
+
+Here `thread-pool-executor` is used, which has a hardcoded limit of threads. It keeps a set number of threads
+available that allow for safe isolation of the blocking operations. The size settings should depend on the app's
+functionality and the number of cores the server has.
+
+Whenever blocking has to be done, use the above configured dispatcher
+instead of the default one:
+
+@@snip [BlockingDispatcherSample.scala](../../../../test/scala/docs/actor/BlockingDispatcherSample.scala) { #separate-dispatcher }
+
+The thread pool behaviour is shown in the figure.
+
+![dispatcher-behaviour-on-good-code.png](../../images/dispatcher-behaviour-on-good-code.png)
+
+the normal requests are easily handled by the default dispatcher - the
+green lines, which represent the actual execution.
+
+When blocking operations are issued, the `my-blocking-dispatcher`
+starts up to the number of configured threads. It handles sleeping. After
+a certain period of nothing happening to the threads, it shuts them down.
+
+If another bunch of operations have to be done, the pool will start new
+threads that will take care of putting them into sleep state, but the
+threads are not wasted.
+
+In this case, the throughput of other actors was not impacted -
+they were still served on the default dispatcher.
+
+This is the recommended way of dealing with any kind of blocking in reactive
+applications. It is referred to as "bulkheading" or "isolating" the bad behaving
+parts of an app. In this case, bad behaviour of blocking operations.
+
+## Available solutions to blocking operations
+
 The non-exhaustive list of adequate solutions to the “blocking problem”
-includes the following suggestions:
+includes the following suggestions, where the 3rd one was what we described in the previous section:
 
  * Do the blocking call within an actor (or a set of actors managed by a router
 @ref:[router](../routing.md),  making sure to
