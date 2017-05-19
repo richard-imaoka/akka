@@ -227,7 +227,7 @@ Use plain `system.actorOf` instead of the DSL to create Actors if you have been 
 
 ### ExtensionKey Deprecation
 
-`ExtensionKey` is a shortcut for writing @ref:[Akka Extensions](../scala/extending-akka.md) but extensions created with it
+`ExtensionKey` is a shortcut for writing **Akka Extensions** (@ref:[Java](../java/extending-akka.md), @ref:[Scala](../scala/extending-akka.md)) but extensions created with it
 cannot be used from Java and it does in fact not save many lines of code over directly implementing `ExtensionId`.
 
 Old:
@@ -269,7 +269,7 @@ The change is source compatible and such library should be recompiled and releas
 and replaced by `GraphStage` in 2.0-M2. The `GraphStage` API has all features (and even more) as the
 previous APIs and is even nicer to use.
 
-Please refer to the @ref:[GraphStage documentation](../scala/stream/stream-customize.md#graphstage), for details on building custom GraphStages.
+Please refer to the **GraphStage documentation** (@ref:[Java](../java/stream/stream-customize.md#graphstage), @ref:[Scala](../scala/stream/stream-customize.md#graphstage)), for details on building custom GraphStages.
 
 `StatefulStage` would be migrated to a simple `GraphStage` that contains some mutable state in its `GraphStageLogic`,
 and `PushPullStage` directly translate to graph stages.
@@ -309,7 +309,7 @@ and one would have to validate each implementation of such Actor using the React
 
 The replacement API is the powerful `GraphStage`. It has all features that raw Actors provided for implementing Stream
 stages and adds additional protocol and type-safety. You can learn all about it in the documentation:
-@ref:[Custom stream processing](../scala/stream/stream-customize.md).
+**Custom stream processing** (@ref:[Java](../java/stream/stream-customize.md), @ref:[Scala](../scala/stream/stream-customize.md)).
 
 You should also read the blog post series on the official team blog, starting with [Mastering GraphStages, part I](http://blog.akka.io/streams/2016/07/30/mastering-graph-stage-part-1),
 which explains using and implementing GraphStages in more practical terms than the reference documentation.
@@ -337,7 +337,7 @@ In 2.4 fusing stages together into the same actor could be completely disabled w
 `akka.stream.materializer.auto-fusing`. The new materializer introduced in Akka 2.5 does not support disabling fusing,
 so this setting does not have any effect any more and has been deprecated. Running each stage in a stream on a separate
 actor can be done by adding explicit async boundaries around every stage. How to add asynchronous boundaries can be seen
-in @ref:[Operator Fusion](../scala/stream/stream-flows-and-basics.md#operator-fusion).
+in **Operator Fusion** (@ref:[Java](../java/stream/stream-flows-and-basics.md#operator-fusion), @ref:[Scala](../scala/stream/stream-flows-and-basics.md#operator-fusion)).
 
 ## Remote
 
@@ -436,7 +436,7 @@ to the better. It might also be in conflict with your previous shutdown code so 
 read the documentation for the Coordinated Shutdown and revisit your own implementations.
 Most likely your implementation will not be needed any more or it can be simplified.
 
-More information can be found in the @ref:[documentation](../scala/actors.md#coordinated-shutdown).
+More information can be found in the documentation (@ref:[Java](../java/actors.md#coordinated-shutdown), @ref:[Scala](../scala/actors.md#coordinated-shutdown)).
 
 For some tests it might be undesired to terminate the `ActorSystem` via `CoordinatedShutdown`.
 You can disable that by adding the following to the configuration of the `ActorSystem` that is
@@ -452,7 +452,7 @@ akka.cluster.run-coordinated-shutdown-when-down = off
 <a id="mig25-weaklyup"></a>
 ### WeaklyUp
 
-@ref:[WeaklyUp](../scala/cluster-usage.md#weakly-up) is now enabled by default, but it can be disabled with configuration option:
+**WeaklyUp** (@ref:[Java](../java/cluster-usage.md#weakly-up), @ref:[Scala](../scala/cluster-usage.md#weakly-up)) is now enabled by default, but it can be disabled with configuration option:
 
 ```
 akka.cluster.allow-weakly-up-members = off
@@ -465,7 +465,7 @@ you might need to enable/disable it in configuration when performing rolling upg
 ### Cluster Sharding state-store-mode
 
 Distributed Data mode is now the default `state-store-mode` for Cluster Sharding. The persistence mode
-is also supported. Read more in the @ref:[documentation](../scala/cluster-sharding.md#cluster-sharding-mode).
+is also supported. Read more in the **documentation** (@ref:[Java](../java/cluster-sharding.md#cluster-sharding-mode), @ref:[Scala](../scala/cluster-sharding.md#cluster-sharding-mode)).
 
 It's important to use the same mode on all nodes in the cluster, i.e. if you perform a rolling upgrade
 from 2.4.16 you might need to change the `state-store-mode` to be the same (`persistence` is default
@@ -475,7 +475,7 @@ in 2.4.x):
 akka.cluster.sharding.state-store-mode = persistence
 ```
 
-Note that the stored @ref:[Remembering Entities](../scala/cluster-sharding.md#cluster-sharding-remembering) data with `persistence` mode cannot
+Note that the stored **Remembering Entities** (@ref:[Java](../java/cluster-sharding.md#cluster-sharding-remembering), @ref:[Scala](../scala/cluster-sharding.md#cluster-sharding-remembering)) data with `persistence` mode cannot
 be migrated to the `data` mode. Such entities must be started again in some other way when using
 `ddata` mode.
 
@@ -531,7 +531,7 @@ After being deprecated for a long time, and replaced by
 
 The corresponding query type is `EventsByPersistenceId`. There are several alternatives for connecting the `Source`
 to an actor corresponding to a previous `PersistentView`. There are several alternatives for connecting the `Source`
-to an actor corresponding to a previous `PersistentView` actor which are documented in @ref:[Integration](../scala/stream/stream-integrations.md).
+to an actor corresponding to a previous `PersistentView` actor which are documented in **Integration** (@ref:[Java](../java/stream/stream-integrations.md), @ref:[Scala](../scala/stream/stream-integrations.md))
 
 The consuming actor may be a plain `Actor` or an `PersistentActor` if it needs to store its own state (e.g. `fromSequenceNr` offset).
 
@@ -539,10 +539,10 @@ Please note that Persistence Query is not experimental/may-change anymore in Akk
 
 ### Persistence Plugin Proxy
 
-A new @ref:[persistence plugin proxy](../scala/persistence.md#persistence-plugin-proxy) was added, that allows sharing of an otherwise
+A new **persistence plugin proxy** (@ref:[Java](../java/persistence.md#persistence-plugin-proxy), @ref:[Scala](../scala/persistence.md#persistence-plugin-proxy)) was added, that allows sharing of an otherwise
 non-sharable journal or snapshot store. The proxy is available by setting `akka.persistence.journal.plugin` or
 `akka.persistence.snapshot-store.plugin` to `akka.persistence.journal.proxy` or `akka.persistence.snapshot-store.proxy`,
-respectively. The proxy supplants the @ref:[Shared LevelDB journal](../scala/persistence.md#shared-leveldb-journal).
+respectively. The proxy supplants the **Shared LevelDB journal** (@ref:[Java](../java/persistence.md#shared-leveldb-journal), @ref:[Scala](../scala/persistence.md#shared-leveldb-journal)).
 
 ## Persistence Query
 
@@ -619,7 +619,7 @@ separate library outside of Akka.
 ### JavaLogger
 
 `akka.contrib.jul.JavaLogger` has been deprecated and included in `akka-actor` instead as
-`akka.event.jul.JavaLogger`. See @ref:[documentation](../scala/logging.md#jul).
+`akka.event.jul.JavaLogger`. See **documentation** (@ref:[Java](../java/logging.md#jul), @ref:[Scala](../scala/logging.md#jul))
 
 The `JavaLoggingAdapter` has also been deprecated, but not included in `akka-actor`. 
 Feel free to copy the source into your project or create a separate library outside of Akka.
@@ -636,7 +636,7 @@ a separate library outside of Akka.
 
 ### ReliableProxy
 
-`ReliableProxy` has been deprecated. Use @ref:[At-Least-Once Delivery](../scala/persistence.md#at-least-once-delivery) instead. `ReliableProxy`
+`ReliableProxy` has been deprecated. Use **At-Least-Once Delivery** (@ref:[Java](../java/persistence.md#at-least-once-delivery), @ref:[Scala](../scala/persistence.md#at-least-once-delivery)) instead. `ReliableProxy`
 was only intended as an example and doesn't have full production quality. If there is demand
 for a lightweight (non-durable) at-least once delivery mechanism we are open for a design discussion.
 
