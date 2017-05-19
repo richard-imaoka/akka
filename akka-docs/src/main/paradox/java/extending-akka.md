@@ -59,7 +59,7 @@ By the way, did you know that Akka's `Typed Actors`, `Serialization` and other f
 <a id="extending-akka-settings"></a>
 ### Application specific settings
 
-The @ref:[configuration](general/configuration.md) can be used for application specific settings. A good practice is to place those settings in an Extension.
+The @ref:[configuration](../general/configuration.md) can be used for application specific settings. A good practice is to place those settings in an Extension.
 
 Sample configuration:
 

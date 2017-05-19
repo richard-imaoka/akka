@@ -177,7 +177,7 @@ akka.extensions = ["akka.cluster.pubsub.DistributedPubSub"]
 
 ## Delivery Guarantee
 
-As in @ref:[Message Delivery Reliability](general/message-delivery-reliability.md) of Akka, message delivery guarantee in distributed pub sub modes is **at-most-once delivery**.
+As in @ref:[Message Delivery Reliability](../general/message-delivery-reliability.md) of Akka, message delivery guarantee in distributed pub sub modes is **at-most-once delivery**.
 In other words, messages can be lost over the wire.
 
 If you are looking for at-least-once delivery guarantee, we recommend [Kafka Akka Streams integration](http://doc.akka.io/docs/akka-stream-kafka/current/home.html).

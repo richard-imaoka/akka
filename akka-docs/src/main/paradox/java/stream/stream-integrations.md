@@ -482,7 +482,7 @@ type-safe and safe to implement `akka.stream.stage.GraphStage`. It can also
 expose a "stage actor ref" is needed to be addressed as-if an Actor.
 Custom stages implemented using `GraphStage` are also automatically fusable.
 
-To learn more about implementing custom stages using it refer to @ref:[Custom processing with GraphStage](../stream/stream-customize.md#graphstage).
+To learn more about implementing custom stages using it refer to @ref:[Custom processing with GraphStage](stream-customize.md#graphstage).
 
 @@@
 

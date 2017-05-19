@@ -47,7 +47,7 @@ You can read more about it in the JDK's [ThreadPoolExecutor documentation](https
 
 @@@
 
-For more options, see the default-dispatcher section of the @ref:[configuration](general/configuration.md).
+For more options, see the default-dispatcher section of the @ref:[configuration](../general/configuration.md).
 
 Then you create the actor as usual and define the dispatcher in the deployment configuration.
 

@@ -616,7 +616,7 @@ Pool with default resizer defined in configuration:
 @@snip [RouterDocSpec.scala]($code$/scala/docs/routing/RouterDocSpec.scala) { #resize-pool-1 }
 
 Several more configuration options are available and described in `akka.actor.deployment.default.resizer`
-section of the reference @ref:[configuration](general/configuration.md).
+section of the reference @ref:[configuration](../general/configuration.md).
 
 Pool with resizer defined in code:
 
@@ -658,7 +658,7 @@ Pool with `OptimalSizeExploringResizer` defined in configuration:
 @@snip [RouterDocSpec.scala]($code$/scala/docs/routing/RouterDocSpec.scala) { #optimal-size-exploring-resize-pool }
 
 Several more configuration options are available and described in `akka.actor.deployment.default.optimal-size-exploring-resizer`
-section of the reference @ref:[configuration](general/configuration.md).
+section of the reference @ref:[configuration](../general/configuration.md).
 
 @@@ note
 

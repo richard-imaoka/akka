@@ -436,7 +436,7 @@ and in the following.
 
 ### Event Tracing
 
-The setting `akka.actor.debug.fsm` in @ref:[configuration](general/configuration.md) enables logging of an
+The setting `akka.actor.debug.fsm` in @ref:[configuration](../general/configuration.md) enables logging of an
 event trace by `LoggingFSM` instances:
 
 @@snip [FSMDocSpec.scala]($code$/scala/docs/actor/FSMDocSpec.scala) { #logging-fsm }

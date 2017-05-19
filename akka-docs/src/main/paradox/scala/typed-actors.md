@@ -163,7 +163,7 @@ as an input parameter to TypedActor.get(…).
 
 By having your Typed Actor implementation class implement `TypedActor.Supervisor`
 you can define the strategy to use for supervising child actors, as described in
-@ref:[supervision](general/supervision.md) and @ref:[Fault Tolerance](fault-tolerance.md).
+@ref:[supervision](../general/supervision.md) and @ref:[Fault Tolerance](fault-tolerance.md).
 
 ## Lifecycle callbacks
 
