@@ -225,7 +225,7 @@ that logging extreme amounts of data may affect your application badly. This can
 @@@
 
 You can configure which event handlers are created at system start-up and listen to logging events. That is done using the 
-`loggers` element in the @ref:[configuration](general/configuration.md).
+`loggers` element in the @ref:[configuration](../general/configuration.md).
 Here you can also define the log level. More fine grained filtering based on the log source 
 can be implemented in a custom `LoggingFilter`, which can be defined in the `logging-filter` 
 configuration property. 
@@ -271,7 +271,7 @@ It has a single dependency: the slf4j-api jar. In your runtime, you also need a 
 ```
 
 You need to enable the Slf4jLogger in the `loggers` element in
-the @ref:[configuration](general/configuration.md). Here you can also define the log level of the event bus.
+the @ref:[configuration](../general/configuration.md). Here you can also define the log level of the event bus.
 More fine grained log levels can be defined in the configuration of the SLF4J backend
 (e.g. logback.xml). You should also define `akka.event.slf4j.Slf4jLoggingFilter` in
 the `logging-filter` configuration property. It will filter the log events using the backend
@@ -456,7 +456,7 @@ A more advanced (including most Akka added information) example pattern would be
 Akka includes a logger for [java.util.logging](https://docs.oracle.com/javase/8/jdocs/api/java/util/logging/package-summary.html#package.description).
 
 You need to enable the `akka.event.jul.JavaLogger` in the `loggers` element in
-the @ref:[configuration](general/configuration.md). Here you can also define the log level of the event bus.
+the @ref:[configuration](../general/configuration.md). Here you can also define the log level of the event bus.
 More fine grained log levels can be defined in the configuration of the logging backend. 
 You should also define `akka.event.jul.JavaLoggingFilter` in
 the `logging-filter` configuration property. It will filter the log events using the backend

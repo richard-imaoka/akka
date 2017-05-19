@@ -305,7 +305,7 @@ when a future completes:
 ### Integration with actors
 
 **This section is a stub and will be extended in the next release**
-**This is a @ref:[may change](../common/may-change.md) feature***
+**This is a @ref:[may change](../../common/may-change.md) feature***
 
 It is possible to acquire an ActorRef that can be addressed from the outside of the stage, similarly how
 `AsyncCallback` allows injecting asynchronous events into a stage logic. This reference can be obtained

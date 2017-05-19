@@ -1,6 +1,6 @@
 # Cluster Usage
 
-For introduction to the Akka Cluster concepts please see @ref:[Cluster Specification](common/cluster.md).
+For introduction to the Akka Cluster concepts please see @ref:[Cluster Specification](../common/cluster.md).
 
 ## Preparing Your Project for Clustering
 
@@ -841,7 +841,7 @@ Make sure you understand the security implications of enabling remote monitoring
 ## Configuration
 
 There are several configuration properties for the cluster. We refer to the
-@ref:[reference configuration](general/configuration.md#config-akka-cluster) for more information.
+@ref:[reference configuration](../general/configuration.md#config-akka-cluster) for more information.
 
 ### Cluster Info Logging
 

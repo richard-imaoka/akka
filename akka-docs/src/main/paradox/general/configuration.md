@@ -242,7 +242,7 @@ supported.
 ## Application specific settings
 
 The configuration can also be used for application specific settings.
-A good practice is to place those settings in an @ref:[Extension](../extending-akka.md#extending-akka-settings).
+A good practice is to place those settings in an @ref:[Extension](../scala/extending-akka.md#extending-akka-settings).
 
 ## Configuring multiple ActorSystem
 
