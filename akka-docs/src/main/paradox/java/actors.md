@@ -27,7 +27,7 @@ may also help to read @ref:[Actor References, Paths and Addresses](general/addre
 
 Actor classes are implemented by extending the `AbstractActor` class and setting
 the “initial behavior” in the constructor by calling the `receive` method in
-the `AbstractActor`.
+the `AbstractActor`. 
 
 The argument to the `receive` method is a `PartialFunction<Object,BoxedUnit>`
 that defines which messages your Actor can handle, along with the implementation of
