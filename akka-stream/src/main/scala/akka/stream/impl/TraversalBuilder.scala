@@ -8,7 +8,7 @@ import akka.annotation.{ DoNotInherit, InternalApi }
 import akka.stream._
 import akka.stream.impl.StreamLayout.AtomicModule
 import akka.stream.impl.TraversalBuilder.{ AnyFunction1, AnyFunction2 }
-import akka.stream.scaladsl.Keep
+import akka.stream.scaladsl.{ Flow, Keep }
 import akka.util.OptionVal
 
 import scala.language.existentials
@@ -383,7 +383,7 @@ import scala.collection.immutable.Map.Map1
   def wire(out: OutPort, in: InPort): TraversalBuilder
 
   /**
-   * Returns the base offset (the first number an input port would receive if there is any) of the module to which
+   * Returns the base offset (the first number an output port would receive if there is any) of the module to which
    * the port belongs *relative to this builder*. This is used to calculate the relative offset of output port mappings
    * (see [[MaterializeAtomic]]).
    *
@@ -397,7 +397,7 @@ import scala.collection.immutable.Map.Map1
   def isUnwired(out: OutPort): Boolean
 
   /**
-   * Returns whether the given output port has been wired in the graph or not.
+   * Returns whether the given input port has been wired in the graph or not.
    */
   def isUnwired(in: InPort): Boolean
 
@@ -827,13 +827,18 @@ import scala.collection.immutable.Map.Map1
     } else if (this.isEmpty) {
       toAppend.copy(
         traversalSoFar = toAppend.traversalSoFar.concat(LinearTraversalBuilder.addMatCompose(traversal, matCompose)))
+    } else if (toAppend eq Flow.identityTraversalBuilder) {
+      copy(
+        outPort = toAppend.outPort,
+        traversalSoFar = PushNotUsed.concat(LinearTraversalBuilder.addMatCompose(traversalSoFar, matCompose))
+      )
     } else {
       if (outPort.isDefined) {
         if (toAppend.inPort.isEmpty)
           throw new IllegalArgumentException("Appended linear module must have an unwired input port because there is a dangling output.")
 
         /*
-         * To understand how append work, first the general structure of the LinearTraversalBuilder must be
+         * To understand how append works, first the general structure of the LinearTraversalBuilder must be
          * understood. The most general structure of LinearTraversalBuilder looks like this (in Flow DSL order):
          *
          *   traversalSoFar ~ pendingBuilder ~ beforeBuilder
@@ -916,7 +921,7 @@ import scala.collection.immutable.Map.Map1
              * This is the case where our last module is a composite, and since it does not have its output port
              * wired yet, the traversal is split into the parts, traversalSoFar, pendingBuilder and beforeBuilder.
              *
-             * Since will wire now the output port, we can assemble everything together:
+             * Since we will wire now the output port, we can assemble everything together:
              */
             val out = outPort.get
             /*
