@@ -33,7 +33,7 @@ import scala.collection.immutable.Map.Map1
  * The Traversal is designed to be position independent so that multiple traversals can be composed relatively
  * simply. This particular feature also avoids issues with multiply imported modules where the identity must
  * be encoded somehow. The two imports don't need any special treatment as they are at different positions in
- * the traversal. See [[MaterializeAtomic]] for more details.
+ * the traversal. See [[MaterializeAtomic]] and comments in akka.stream.impl.package for more details.
  */
 @InternalApi private[akka] sealed trait Traversal {
 
@@ -337,7 +337,7 @@ import scala.collection.immutable.Map.Map1
  *
  * The resulting Traversal can be accessed via the `traversal` method once the graph is completed (all ports are
  * wired). The Traversal may be accessed earlier, depending on the type of the builder and certain conditions.
- * See [[CompositeTraversalBuilder]] and [[LinearTraversalBuilder]].
+ * See [[CompositeTraversalBuilder]] and [[LinearTraversalBuilder]], also comments in akka.stream.impl.package for more details.
  */
 @DoNotInherit private[akka] sealed trait TraversalBuilder {
 
@@ -375,9 +375,9 @@ import scala.collection.immutable.Map.Map1
   def wire(out: OutPort, in: InPort): TraversalBuilder
 
   /**
-   * Returns the base offset (the first number an output port would receive if there is any) of the module to which
+   * Returns the base offset (the first number an input port would receive if there is any) of the module to which
    * the port belongs *relative to this builder*. This is used to calculate the relative offset of output port mappings
-   * (see [[MaterializeAtomic]]).
+   * (see [[MaterializeAtomic]] fore more detail).
    *
    * This method only guarantees to return the offset of modules for output ports that have not been wired.
    */
@@ -669,6 +669,7 @@ import scala.collection.immutable.Map.Map1
  * [[CompositeTraversalBuilder]] are embedded. These are not guaranteed to have their unwired input/output ports
  * in a fixed location, therefore the last step of the Traversal might need to be changed in those cases from the
  * -1 relative offset to something else (see rewireLastOutTo).
+ * See comments in akka.stream.impl.package for more details.
  */
 @InternalApi private[akka] final case class LinearTraversalBuilder(
   inPort:               OptionVal[InPort],
@@ -1068,6 +1069,7 @@ import scala.collection.immutable.Map.Map1
  * reason why this is needed is because the builder is referenced at various places, while it needs to be mutated.
  * In an immutable data structure this is best done with an indirection, i.e. places refer to this immutable key and
  * look up the current state in an extra Map.
+ * See comments in akka.stream.impl.package for more details.
  */
 @InternalApi private[akka] final class BuilderKey extends TraversalBuildStep {
   override def toString = s"K:$hashCode"
@@ -1089,6 +1091,7 @@ import scala.collection.immutable.Map.Map1
  * in a non-deterministic order (depending on wiring order) would mess up all relative addressing. This is the
  * primary technical reason why a reverseTraversal list is maintained and the Traversal can only be completed once
  * all output ports have been wired.
+ * See comments in akka.stream.impl.package for more details.
  *
  * @param reverseBuildSteps Keeps track of traversal steps that needs to be concatenated. This is basically
  *                         a "queue" of BuilderKeys that point to builders of submodules/subgraphs. Since it is

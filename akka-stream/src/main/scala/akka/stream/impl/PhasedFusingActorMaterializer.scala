@@ -33,7 +33,7 @@ import akka.util.OptionVal
  */
 @InternalApi private[akka] object PhasedFusingActorMaterializer {
 
-  val Debug = true
+  val Debug = false
 
   val DefaultPhase: Phase[Any] = new Phase[Any] {
     override def apply(settings: ActorMaterializerSettings, materializer: PhasedFusingActorMaterializer, islandName: String): PhaseIsland[Any] =
