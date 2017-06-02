@@ -33,7 +33,7 @@ import akka.util.OptionVal
  */
 @InternalApi private[akka] object PhasedFusingActorMaterializer {
 
-  val Debug = false
+  val Debug = true
 
   val DefaultPhase: Phase[Any] = new Phase[Any] {
     override def apply(settings: ActorMaterializerSettings, materializer: PhasedFusingActorMaterializer, islandName: String): PhaseIsland[Any] =
@@ -423,6 +423,22 @@ private final case class SavedIslandData(islandGlobalOffset: Int, lastVisitedOff
       PhasedFusingActorMaterializer.DefaultPhase,
       PhasedFusingActorMaterializer.DefaultPhases)
 
+  def wrap[T](dequeue: java.util.ArrayDeque[T]): String = {
+    if (dequeue.size() == 0)
+      "[]"
+    else {
+      val strBuilder: StringBuilder = new StringBuilder
+      strBuilder.append("[\n")
+      var iter = dequeue.iterator()
+      while (iter.hasNext) {
+        val item = iter.next()
+        strBuilder.append("  " + item.toString + ",\n")
+      }
+      strBuilder.append("]")
+      strBuilder.toString()
+    }
+  }
+
   override def materialize[Mat](
     graph:             Graph[ClosedShape, Mat],
     initialAttributes: Attributes,
@@ -473,10 +489,10 @@ private final case class SavedIslandData(islandGlobalOffset: Int, lastVisitedOff
             nextStep = first
           case Pop ⇒
             val popped = matValueStack.removeLast()
-            if (Debug) println(s"POP: $popped => $matValueStack")
+            if (Debug) println(s"POP: $popped <= ${wrap(matValueStack)}")
           case PushNotUsed ⇒
             matValueStack.addLast(NotUsed)
-            if (Debug) println(s"PUSH: NotUsed => $matValueStack")
+            if (Debug) println(s"PUSH: NotUsed => ${wrap(matValueStack)}")
           case transform: Transform ⇒
             val prev = matValueStack.removeLast()
             val result = transform(prev)
@@ -487,13 +503,13 @@ private final case class SavedIslandData(islandGlobalOffset: Int, lastVisitedOff
             val first = matValueStack.removeLast()
             val result = compose(first, second)
             matValueStack.addLast(result)
-            if (Debug) println(s"COMP: $matValueStack")
+            if (Debug) println(s"COMP: ${wrap(matValueStack)}")
           case PushAttributes(attr) ⇒
             attributesStack.addLast(attributesStack.getLast and attr)
-            if (Debug) println(s"ATTR PUSH: $attr")
+            if (Debug) println(s"ATTR PUSH: $attr => ${wrap(attributesStack)}")
           case PopAttributes ⇒
-            attributesStack.removeLast()
-            if (Debug) println(s"ATTR POP")
+            val popped = attributesStack.removeLast()
+            if (Debug) println(s"ATTR POP: $popped <= ${wrap(attributesStack)}")
           case EnterIsland(tag) ⇒
             islandTracking.enterIsland(tag, attributesStack.getLast)
           case ExitIsland ⇒

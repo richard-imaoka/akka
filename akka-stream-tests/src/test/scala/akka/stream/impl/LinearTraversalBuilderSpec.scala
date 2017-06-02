@@ -31,12 +31,14 @@ class LinearTraversalBuilderSpec extends AkkaSpec {
         source.traversalBuilder
           .append(sink.traversalBuilder, sink.shape, Keep.left)
 
+      TraversalBuilder.printTraversal(builder.traversal)
       val mat = testMaterialize(builder)
 
       mat.connections should ===(1)
 
       mat.outlets(0) should ===(source.out)
       mat.inlets(0) should ===(sink.in)
+
     }
 
     "work with two Flows" in {

@@ -174,7 +174,14 @@ object TraversalTestUtils {
       }
     }
 
-    new MaterializationResult(connections, inlets, outlets, matValueStack.peekLast(), attributesResult.reverse, islandsResult.reverse)
+    val mat = new MaterializationResult(connections, inlets, outlets, matValueStack.peekLast(), attributesResult.reverse, islandsResult.reverse)
+//    println(s"matValue: ${mat.matValue}")
+//    println(s"matValueStack: ${matValueStack}")
+//    println(s"attributes: ${mat.attributesAssignments}")
+//    println(s"toString: ${mat}")
+//    println(s"islandResult: ${islandsResult}")
+//    println(s"islandStack: ${islandStack}")
+    mat
   }
 
 }
