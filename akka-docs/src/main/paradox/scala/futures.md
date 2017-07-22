@@ -225,6 +225,7 @@ using the `zip` operation.
 
 ## Exceptions
 
+
 Since the result of a `Future` is created concurrently to the rest of the program, exceptions must be handled differently.
 It doesn't matter if an `Actor` or the dispatcher is completing the `Future`,
 if an `Exception` is caught the `Future` will contain it instead of a valid result.
