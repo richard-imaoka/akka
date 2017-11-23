@@ -49,10 +49,9 @@ class SubstreamDocSpec extends AkkaSpec {
 
     //#wordCount
     val text =
-      """This is the first line.
-        |The second line.
-        |There is also the 3rd line."""
-        .stripMargin
+      "This is the first line.\n" +
+        "The second line.\n" +
+        "There is also the 3rd line\n"
 
     val charCount = Source(text.toList)
       .splitAfter { _ == '\n' }

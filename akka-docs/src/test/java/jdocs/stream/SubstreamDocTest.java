@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 public class SubstreamDocTest  extends AbstractJavaTest {
 
@@ -85,14 +86,16 @@ public class SubstreamDocTest  extends AbstractJavaTest {
           "The second line.\n" +
           "There is also the 3rd line\n";
 
-        Source.from(Collections.list(text))
+        Source.from(Arrays.asList(text.split("")))
+          .map(x -> x.charAt(0))
           .splitAfter(x -> x == '\n')
           .filter(x -> x != '\n')
           .map(x -> 1)
           .reduce((x,y) -> x + y)
           .to(Sink.foreach(x -> System.out.println(x)))
-          .run();
+          .run(mat);
         //#wordCount
+        Thread.sleep(1000);
     }
 
     @Test

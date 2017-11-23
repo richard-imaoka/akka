@@ -98,7 +98,9 @@ Java
 This prints out the following output.
 
 ```
-
+23
+16
+26
 ``` 
 
 ![stream-substream-splitWhen-splitAfter.png](../../images/stream-substream-splitWhen-splitAfter.png)
