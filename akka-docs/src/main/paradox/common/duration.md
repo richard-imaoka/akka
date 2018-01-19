@@ -1,9 +1,9 @@
 # Duration
 
 Durations are used throughout the Akka library, wherefore this concept is
-represented by a special data type, `scala.concurrent.duration.Duration`.
-Values of this type may represent infinite (`Duration.Inf`,
-`Duration.MinusInf`) or finite durations, or be `Duration.Undefined`.
+represented by a special data type, @scaladoc[`scala.concurrent.duration.Duration`](scala.concurrent.duration.Duration).
+Values of this type may represent infinite (@scaladoc[`Duration.Inf`](scala.concurrent.duration.Duration$#Inf:scala.concurrent.duration.Duration.Infinite),
+@scaladoc[`Duration.MinusInf`](scala.concurrent.duration.Duration$#MinusInf:scala.concurrent.duration.Duration.Infinite)) or finite durations, or be @scaladoc[`Duration.Undefined`](scala.concurrent.duration.Duration$#Undefined:scala.concurrent.duration.Duration.Infinite).
 
 ## Finite vs. Infinite
 
@@ -11,10 +11,10 @@ Since trying to convert an infinite duration into a concrete time unit like
 seconds will throw an exception, there are different types available for
 distinguishing the two kinds at compile time:
 
- * `FiniteDuration` is guaranteed to be finite, calling `toNanos`
+ * @scaladoc[`FiniteDuration`](scala.concurrent.duration.FiniteDuration) is guaranteed to be finite, calling @scaladoc[`toNanos`](scala.concurrent.duration.FiniteDuration#toNanos:Long)
 and friends is safe
- * `Duration` can be finite or infinite, so this type should only be used
-when finite-ness does not matter; this is a supertype of `FiniteDuration`
+ * @scaladoc[`Duration`](scala.concurrent.duration.Duration) can be finite or infinite, so this type should only be used
+when finite-ness does not matter; this is a supertype of @scaladoc[`FiniteDuration`](scala.concurrent.duration.FiniteDuration)
 
 ## Scala
 
