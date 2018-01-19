@@ -1,0 +1,5 @@
+{
+  "hosting": {
+    "public": "akka-docs/target/paradox/site/main"
+  }
+}
