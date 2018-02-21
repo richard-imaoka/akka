@@ -218,6 +218,8 @@ private[akka] abstract class Mailbox(val messageQueue: MessageQueue)
   }
 
   override final def run(): Unit = {
+    if (actor != null && actor.self.path.toString.contains("user"))
+      println(s"${Thread.currentThread()}|[${actor.self.path}]|Mailbox run() called")
     try {
       if (!isClosed) { //Volatile read, needed here
         processAllSystemMessages() //First, deal with any system messages
@@ -227,6 +229,8 @@ private[akka] abstract class Mailbox(val messageQueue: MessageQueue)
       setAsIdle() //Volatile write, needed here
       dispatcher.registerForExecution(this, false, false)
     }
+    if (actor != null && actor.self.path.toString.contains("user"))
+      println(s"${Thread.currentThread()}|[${actor.self.path}]|Mailbox run() finished")
   }
 
   override final def getRawResult(): Unit = ()
@@ -247,11 +251,16 @@ private[akka] abstract class Mailbox(val messageQueue: MessageQueue)
   /**
    * Process the messages in the mailbox
    */
-  @tailrec private final def processMailbox(
+  private final def processMailbox(
     left:       Int  = java.lang.Math.max(dispatcher.throughput, 1),
-    deadlineNs: Long = if (dispatcher.isThroughputDeadlineTimeDefined == true) System.nanoTime + dispatcher.throughputDeadlineTime.toNanos else 0L): Unit =
+    deadlineNs: Long = if (dispatcher.isThroughputDeadlineTimeDefined == true) System.nanoTime + dispatcher.throughputDeadlineTime.toNanos else 0L): Unit = {
+
+    if (actor.self.path.toString.contains("user"))
+      println(s"${Thread.currentThread()}|[${actor.self.path}]|Mailbox processMailbox() called, shouldProcessMessage=$shouldProcessMessage")
     if (shouldProcessMessage) {
       val next = dequeue()
+      if (actor.self.path.toString.contains("user"))
+        println(s"${Thread.currentThread()}|[${actor.self.path}]|Mailbox processMailbox() next=$next")
       if (next ne null) {
         if (Mailbox.debug) println(actor.self + " processing message " + next)
         actor invoke next
@@ -262,6 +271,9 @@ private[akka] abstract class Mailbox(val messageQueue: MessageQueue)
           processMailbox(left - 1, deadlineNs)
       }
     }
+    if (actor.self.path.toString.contains("user"))
+      println(s"${Thread.currentThread()}|[${actor.self.path}]|Mailbox processMailbox() finished")
+  }
 
   /**
    * Will at least try to process all queued system messages: in case of

@@ -50,9 +50,15 @@ class Dispatcher(
    * INTERNAL API
    */
   protected[akka] def dispatch(receiver: ActorCell, invocation: Envelope): Unit = {
+    if (receiver.self != null && receiver.self.path.toString.contains("user"))
+      println(s"${Thread.currentThread()}|[${receiver.self.path}]|Dispatcher dispatch(${invocation}) started")
+
     val mbox = receiver.mailbox
     mbox.enqueue(receiver.self, invocation)
     registerForExecution(mbox, true, false)
+
+    if (receiver.self != null && receiver.self.path.toString.contains("user"))
+      println(s"${Thread.currentThread()}|[${receiver.self.path}]|Dispatcher dispatch(${invocation}) finished")
   }
 
   /**
