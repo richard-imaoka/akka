@@ -12,9 +12,8 @@ This section explains using plain Scala Futures but focuses on their interop wit
 
 ## Introduction
 
-In the Scala Standard Library, a [Future](http://en.wikipedia.org/wiki/Futures_and_promises) is a data structure
-used to retrieve the result of some concurrent operation. This result can be accessed synchronously (blocking)
-or asynchronously (non-blocking).
+In the Scala Standard Library, a [Future](https://docs.scala-lang.org/overviews/core/futures.html) is a data structure
+used to retrieve the result of some concurrent operation.
 
 @@@ div { .group-java }
 
@@ -40,12 +39,12 @@ Java
 
 ### Within Actors
 
-Each actor is configured to be run on a `MessageDispatcher`, and that
+Each actor is configured to be run on a `Dispatcher`, and that
 dispatcher doubles as an `ExecutionContext`. If the nature of the Future
 calls invoked by the actor matches or is compatible with the activities of that
 actor (e.g. all CPU bound and no latency requirements), then it may be easiest
-to reuse the dispatcher for running the Futures by importing
-@scala[`context.dispatcher`]@java[`getContext().dispatcher()`].
+to reuse the dispatcher for running the Futures by
+@scala[importing `context.dispatcher`]@java[using `getContext().dispatcher()`].
 
 Scala
 :  @@snip [FutureDocSpec.scala]($code$/scala/docs/future/FutureDocSpec.scala) { #context-dispatcher }
@@ -53,26 +52,39 @@ Scala
 Java
 :  @@snip [ActorWithFuture.java]($code$/java/jdocs/future/ActorWithFuture.java) { #context-dispatcher }
 
+
+@@@ warning
+
+Do not close over actor's internal mutable state inside `Future`. If you do that,
+you will lose the whole thread-safety benefit provided by the actor model, and
+you have to guard actor's internal mutable state by yourself from multi-thread access.
+
+See @ref[Futures and the Java Memory Model](jmm.md##futures-and-the-java-memory-model) for more detail.
+
+@@@
+
+@@@ warning
+
+Also, you should not perform a blocking operation inside a `Future `
+when you are using `Actor`'s default dispatcher. That can cause a thread starvation problem
+which is described in more detail in @ref[Blocking Needs Careful Management](dispatchers.md#blocking-needs-careful-management).
+
+@@@
+
 ## Use with Actors
+
+### Actor ask pattern
 
 There are generally two ways of getting a reply from an @scala[`Actor`]@java[`AbstractActor`]: the first is by a sent message (@scala[`actor ! msg`]@java[`actorRef.tell(msg, sender)`]),
 which only works if the original sender was an @scala[`Actor`]@java[`AbstractActor`]) and the second is through a `Future`.
 
-Using @scala[an `Actor`'s `?`]@java[the `ActorRef`'s `ask`] method to send a message will return a `Future`.
-To wait for and retrieve the actual result the simplest method is:
+Using @scala[an `Actor`'s `?`]@java[`Patterns.ask`] method to send a message will return a `Future`.
 
 Scala
 :  @@snip [FutureDocSpec.scala]($code$/scala/docs/future/FutureDocSpec.scala) { #ask-blocking }
 
 Java
 :  @@snip [FutureDocTest.java]($code$/java/jdocs/future/FutureDocTest.java) { #imports1 #ask-blocking }
-
-This will cause the current thread to block and wait for the @scala[`Actor`]@java[`AbstractActor`] to 'complete' the `Future` with its reply.
-Blocking is discouraged though as it will cause performance problems.
-The blocking operations are located in `Await.result` and `Await.ready` to make it easy to spot where blocking occurs.
-Alternatives to blocking are discussed further within this documentation. Also note that the `Future` returned by
-an @scala[`Actor`]@java[`AbstractActor`] is a @scala[`Future[Any]`]@java[`Future<Object>`] since an @scala[`Actor`]@java[`AbstractActor`] is dynamic.
-That is why the @scala[`asInstanceOf`]@java[cast to `String`] is used in the above sample.
 
 @@@ warning
 
@@ -93,13 +105,25 @@ or a `ClassCastException` if not. Handling `Exception`s will be discussed furthe
 
 @@@ 
 
-To send the result of a `Future` to an `Actor`, you can use the `pipe` construct:
+### pipeTo
+
+To send the result of a `Future` to an `Actor`, you can use the `pipe` construct.
+One typical use case is to receive a message by the ask pattern ask described above,
+then pipe it to another actor. The below sample redirect the message to the sender by `pipeTo`:
 
 scala
 :  @@snip [FutureDocSpec.scala]($code$/scala/docs/future/FutureDocSpec.scala) { #pipe-to }
 
 java
 :  @@snip [FutureDocTest.java]($code$/java/jdocs/future/FutureDocTest.java) { #pipe-to }
+
+@@@ warning
+
+You can use `Await.result` and `Await.ready` on `Future`, but they are provided for exceptional situations where you **must** block,
+a good rule of thumb is to only use them if you know why you **must** block. For all other cases, use
+asynchronous composition as described below.
+
+@@@
 
 ## Use Directly
 

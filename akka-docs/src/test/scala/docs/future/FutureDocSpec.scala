@@ -7,11 +7,12 @@ package docs.future
 import language.postfixOps
 
 import akka.testkit._
-import akka.actor.{ Actor, Props }
-import akka.actor.Status
+import akka.actor.{ Actor, ActorRef, Props, Status }
 import akka.util.Timeout
 import scala.concurrent.duration._
 import java.lang.IllegalStateException
+import java.time.OffsetDateTime
+
 import scala.concurrent.{ Await, ExecutionContext, Future, Promise }
 import scala.util.{ Failure, Success }
 
@@ -35,6 +36,70 @@ object FutureDocSpec {
         n += 2
     }
   }
+
+  //#pipe-to
+  object User {
+    case class UserData(name: String, age: Int)
+    case class UserEvent(action: String, at: OffsetDateTime)
+  }
+
+  object UserActor {
+    case class GetUser(userId: String)
+  }
+
+  class UserActor extends Actor {
+    import User._
+    import UserActor._
+
+    def receive = {
+      case GetUser(userId) ⇒
+        val userData: UserData = ??? //Get UserData somehow, maybe from database
+        sender() ! userData
+    }
+  }
+
+  object UserHistoryActor {
+    case class GetUserHistory(userId: String)
+  }
+
+  class UserHistoryActor extends Actor {
+    import User._
+    import UserActor._
+
+    def receive = {
+      case GetUser(userId) ⇒
+        val userData: UserData = ??? //Get UserData somehow, maybe from database
+        sender() ! userData
+    }
+  }
+
+  object ProxyActor {
+    sealed trait Message
+    case class QueryUser(userId: String) extends Message
+    case class QueryUserHistory(userId: String) extends Message
+  }
+
+  class ProxyActor(
+    userActor:        ActorRef,
+    userHistoryActor: ActorRef
+  ) extends Actor {
+    import ProxyActor._
+    import UserActor._
+    import UserHistoryActor._
+    import akka.pattern.ask
+    import akka.pattern.pipe
+
+    implicit val timeout = Timeout(5 seconds)
+
+    def receive = {
+      case QueryUser(userId) ⇒
+        (userActor ? GetUser(userId)) pipeTo sender()
+      case QueryUserHistory(userId) ⇒
+        (userActor ? GetUserHistory(userId)) pipeTo sender()
+    }
+  }
+  //#pipe-to
+
 }
 
 class FutureDocSpec extends AkkaSpec {
@@ -72,11 +137,6 @@ class FutureDocSpec extends AkkaSpec {
     val future = actor ? msg // enabled by the “ask” import
     val result = Await.result(future, timeout.duration).asInstanceOf[String]
     //#ask-blocking
-
-    //#pipe-to
-    import akka.pattern.pipe
-    future pipeTo actor
-    //#pipe-to
 
     result should be("HELLO")
   }

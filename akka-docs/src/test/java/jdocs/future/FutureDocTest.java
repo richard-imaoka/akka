@@ -21,6 +21,7 @@ import akka.util.Timeout;
 import scala.concurrent.duration.Duration;
 import akka.japi.Function;
 
+import java.time.OffsetDateTime;
 import java.util.concurrent.*;
 
 import static akka.dispatch.Futures.future;
@@ -112,6 +113,67 @@ public class FutureDocTest extends AbstractJavaTest {
     }
     //#print-result
   }
+
+  //#pipe-to
+  public class UserData  { final String name; final int age; }
+  public class UserEvent { final String action; final OffsetDateTime at; }
+
+  public class GetUserData      { final String userId; GetUserData(String userId){ this.userId = userId; } }
+  public class GetUserHistory   { final String userId; GetUserHistory(String userId){ this.userId = userId; } }
+  public class QueryUserData    { final String userId; QueryUserData(String userId){ this.userId = userId; } }
+  public class QueryUserHistory { final String userId; QueryUserHistory(String userId){ this.userId = userId; } }
+
+  public class UserActor extends AbstractActor {
+    @Override
+    public Receive createReceive() {
+      return receiveBuilder()
+        .match(GetUserData.class, msg -> {
+          UserData data = null; //it should actually retrieve data somewhere, maybe from database
+          sender().tell(data, self());
+        })
+        .build();
+    }
+  }
+
+  public class UserHistoryActor extends AbstractActor {
+    @Override
+    public Receive createReceive() {
+      return receiveBuilder()
+        .match(GetUserHistory.class, msg -> {
+          ArrayList<UserEvent> data = null; //it should actually retrieve data somewhere, maybe from database
+          sender().tell(data, self());
+        })
+        .build();
+    }
+  }
+
+  public class ProxyActor extends AbstractActor {
+    ActorRef userActor;
+    ActorRef userHistoryActor;
+    Timeout timeout = new Timeout(Duration.create(5, "seconds"));
+
+    ProxyActor(ActorRef userActor, ActorRef userHistoryActor) {
+      this.userActor = userActor;
+      this.userHistoryActor = userHistoryActor;
+    }
+
+    @Override
+    public Receive createReceive() {
+      return receiveBuilder()
+        .match(QueryUserData.class, msg -> {
+          Future<Object> fut = Patterns.ask(userActor, new GetUserData(msg.userId), timeout);
+          Patterns.pipe(fut, context().dispatcher());
+
+        })
+        .match(QueryUserHistory.class, msg -> {
+          Future<Object> fut = Patterns.ask(userActor, new GetUserHistory(msg.userId), timeout);
+          Patterns.pipe(fut, context().dispatcher());
+        })
+        .build();
+    }
+  }
+  //#pipe-to
+
   @SuppressWarnings("unchecked") @Test public void useCustomExecutionContext() throws Exception {
     ExecutorService yourExecutorServiceGoesHere = Executors.newSingleThreadExecutor();
     //#diy-execution-context
@@ -130,14 +192,15 @@ public class FutureDocTest extends AbstractJavaTest {
   public void useBlockingFromActor() throws Exception {
     ActorRef actor = system.actorOf(Props.create(MyActor.class));
     String msg = "hello";
-    //#ask-blocking
+    //#ask-non-blocking
     Timeout timeout = new Timeout(Duration.create(5, "seconds"));
     Future<Object> future = Patterns.ask(actor, msg, timeout);
+    future.onSuccess( x -> x
+
+    );
     String result = (String) Await.result(future, timeout.duration());
-    //#ask-blocking
-    //#pipe-to
-    akka.pattern.Patterns.pipe(future, system.dispatcher()).to(actor);
-    //#pipe-to
+    //#ask-non-blocking
+
     assertEquals("HELLO", result);
   }
 
